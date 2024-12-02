@@ -1,5 +1,5 @@
 {
-  description = "Generate Grafana dashboards";
+  description = "Advent of Code";
 
   inputs = {
     nixos.url = "nixpkgs/nixos-unstable";
