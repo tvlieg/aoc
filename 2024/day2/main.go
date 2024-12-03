@@ -20,12 +20,12 @@ func main() {
 	for scanner.Scan() {
 		line := scanner.Text()
 		fields := strings.Fields(line)
-		level := make([]int, len(fields))
+		report := make([]int, len(fields))
 		for i, f := range fields {
 			n, _ := strconv.Atoi(f)
-			level[i] = n
+			report[i] = n
 		}
-		if isSafe(level) {
+		if isSafe(report) {
 			safe++
 		}
 	}
@@ -33,15 +33,15 @@ func main() {
 	fmt.Println(safe)
 }
 
-func isSafe(level []int) bool {
-	if len(level) <= 1 {
+func isSafe(report []int) bool {
+	if len(report) <= 1 {
 		return true
 	}
 
 	var increase, decrease bool
-	for i := 0; i < len(level)-1; i++ {
-		a := level[i]
-		b := level[i+1]
+	for i := 0; i < len(report)-1; i++ {
+		a := report[i]
+		b := report[i+1]
 		if a == b {
 			return false
 		}

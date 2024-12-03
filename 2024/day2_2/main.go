@@ -4,13 +4,14 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"slices"
 	"strconv"
 	"strings"
 )
 
 func main() {
-	filePath := "example_input"
-	// filePath := "input"
+	// filePath := "example_input"
+	filePath := "input"
 
 	file, _ := os.Open(filePath)
 	defer file.Close()
@@ -25,22 +26,17 @@ func main() {
 			n, _ := strconv.Atoi(f)
 			report[i] = n
 		}
-		fmt.Println(report)
 		if isSafe(report) {
-			fmt.Println("safe")
 			safe++
 			continue
 		}
 		for i := range report {
-			tmp := make([]int, len(report)-1)
-			s1 := report[0:i]
-			s2 := report[i+1:]
-			tmp := append(s1, s2...)
-			fmt.Println("dampening: ", tmp)
+			tmp := make([]int, len(report))
+			copy(tmp, report)
+			tmp = slices.Delete(tmp, i, i+1)
 			if isSafe(tmp) {
-				fmt.Println("Safe when removing element: ", i)
 				safe++
-				continue
+				break
 			}
 		}
 	}
