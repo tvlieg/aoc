@@ -18,15 +18,14 @@ func main() {
 	scanner := bufio.NewScanner(file)
 	var lines [][]byte
 	for scanner.Scan() {
-		lines = append(lines, append([]byte(nil), scanner.Bytes()...))
+		lines = append(lines, append([]byte{}, scanner.Bytes()...))
 	}
 
-	count := count(lines)
-
-	fmt.Println(count)
+	fmt.Println("part 1:", part1(lines))
+	fmt.Println("part 2:", part2(lines))
 }
 
-func count(lines [][]byte) int {
+func part1(lines [][]byte) int {
 	xmas := []byte("XMAS")
 	reverse := []byte("SAMX")
 	lenXmas := len(xmas)
@@ -71,6 +70,30 @@ func count(lines [][]byte) int {
 				if slices.Equal(diagonalDownLeft, xmas) || slices.Equal(diagonalDownLeft, reverse) {
 					count++
 				}
+			}
+		}
+	}
+	return count
+}
+
+func part2(lines [][]byte) int {
+	var count int
+	for i := 1; i < len(lines)-1; i++ {
+		for j := 1; j < len(lines[0])-1; j++ {
+			if lines[i][j] != 'A' {
+				continue
+			}
+
+			topLeft := lines[i-1][j-1]
+			topRight := lines[i-1][j+1]
+			bottomLeft := lines[i+1][j-1]
+			bottomRight := lines[i+1][j+1]
+
+			one := (topLeft == 'M' && bottomRight == 'S') || (topLeft == 'S' && bottomRight == 'M')
+			two := (topRight == 'M' && bottomLeft == 'S') || (topRight == 'S' && bottomLeft == 'M')
+
+			if one && two {
+				count++
 			}
 		}
 	}
