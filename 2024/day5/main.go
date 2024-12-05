@@ -16,10 +16,9 @@ func main() {
 	file, _ := os.Open(filePath)
 	defer file.Close()
 
-	var updates [][]int
-	before := make(map[int][]int)
-
 	scanner := bufio.NewScanner(file)
+
+	rules := make(map[[2]int]struct{})
 	for scanner.Scan() {
 		line := scanner.Text()
 		if line == "" {
@@ -27,12 +26,13 @@ func main() {
 		}
 
 		nums := strings.Split(line, "|")
-		first, _ := strconv.Atoi(nums[0])
-		second, _ := strconv.Atoi(nums[1])
+		a, _ := strconv.Atoi(nums[0])
+		b, _ := strconv.Atoi(nums[1])
 
-		before[first] = append(before[first], second)
-
+		rules[[2]int{a, b}] = struct{}{}
 	}
+
+	var updates [][]int
 	for scanner.Scan() {
 		line := scanner.Text()
 		strings := strings.Split(line, ",")
@@ -48,27 +48,40 @@ func main() {
 
 	var count int
 	for _, update := range updates {
-		if isCorrectlyOrdered(update, before) {
-			middle := len(update) / 2
-			count += update[middle]
-		}
-	}
-	fmt.Println(count)
-}
-
-func isCorrectlyOrdered(update []int, rules map[int][]int) bool {
-	// Loop over pages in update
-	for i := len(update) - 1; i >= 0; i-- {
-		page := update[i]
-		mustAfter, ok := rules[page]
-		if !ok {
-			// no rules for page
+		if !isCorrectlyOrdered(update, rules) {
 			continue
 		}
+		middle := len(update) / 2
+		count += update[middle]
+	}
+	fmt.Println("part1:", count)
 
-		before := update[0:i]
-		for _, pageBefore := range before {
-			if slices.Contains(mustAfter, pageBefore) {
+	count = 0
+	for _, update := range updates {
+		if isCorrectlyOrdered(update, rules) {
+			continue
+		}
+		slices.SortFunc(update, func(a, b int) int {
+			if _, ok := rules[[2]int{a, b}]; ok {
+				return -1
+			}
+			if _, ok := rules[[2]int{b, a}]; ok {
+				return 1
+			}
+			return 0
+		})
+		middle := len(update) / 2
+		count += update[middle]
+	}
+	fmt.Println("part2:", count)
+}
+func isCorrectlyOrdered(update []int, rules map[[2]int]struct{}) bool {
+	for i := 0; i < len(update)-1; i++ {
+		for j := i + 1; j < len(update); j++ {
+			if _, ok := rules[[2]int{update[i], update[j]}]; ok {
+				continue
+			}
+			if _, ok := rules[[2]int{update[j], update[i]}]; ok {
 				return false
 			}
 		}
