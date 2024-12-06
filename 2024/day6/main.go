@@ -7,8 +7,8 @@ import (
 )
 
 func main() {
-	filePath := "example_input"
-	// filePath := "input"
+	// filePath := "example_input"
+	filePath := "input"
 
 	file, _ := os.Open(filePath)
 	defer file.Close()
@@ -55,6 +55,28 @@ func main() {
 	}
 	fmt.Println(len(coordsSeen))
 
-	// s = state{x, y, dir}
-	// statesSeen := map[[3]int]struct{}{{s.x, s.y, int(s.dir)}: {}}
+	s = state{x, y, dir}
+	var count int
+	for coord := range coordsSeen {
+		g[coord[1]][coord[0]] = obstacle
+		if hasLoop(g, s) {
+			count++
+		}
+		g[coord[1]][coord[0]] = none
+	}
+	fmt.Println(count)
+}
+
+func hasLoop(g grid, s state) bool {
+	statesSeen := map[[3]int]struct{}{{s.x, s.y, int(s.dir)}: {}}
+	for {
+		if s.leavesMappedArea(g) {
+			return false
+		}
+		s.move(g)
+		if _, seen := statesSeen[[3]int{s.x, s.y, int(s.dir)}]; seen {
+			return true
+		}
+		statesSeen[[3]int{s.x, s.y, int(s.dir)}] = struct{}{}
+	}
 }

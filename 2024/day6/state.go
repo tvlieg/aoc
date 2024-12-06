@@ -12,10 +12,10 @@ func (s *state) String() string {
 }
 
 func (s *state) leavesMappedArea(g grid) bool {
-	if s.x == 0 && s.dir == east {
+	if s.x == 0 && s.dir == west {
 		return true
 	}
-	if s.x == len(g)-1 && s.dir == west {
+	if s.x == len(g)-1 && s.dir == east {
 		return true
 	}
 	if s.y == 0 && s.dir == north {
@@ -90,10 +90,10 @@ func (d direction) String() string {
 	switch d {
 	case north:
 		return "^"
-	case east:
-		return ">"
 	case south:
 		return "v"
+	case east:
+		return ">"
 	case west:
 		return "<"
 	default:
