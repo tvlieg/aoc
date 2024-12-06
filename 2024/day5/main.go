@@ -43,7 +43,6 @@ func main() {
 		}
 
 		updates = append(updates, nums)
-
 	}
 
 	var count int
@@ -78,9 +77,6 @@ func main() {
 func isCorrectlyOrdered(update []int, rules map[[2]int]struct{}) bool {
 	for i := 0; i < len(update)-1; i++ {
 		for j := i + 1; j < len(update); j++ {
-			if _, ok := rules[[2]int{update[i], update[j]}]; ok {
-				continue
-			}
 			if _, ok := rules[[2]int{update[j], update[i]}]; ok {
 				return false
 			}

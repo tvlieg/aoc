@@ -3,13 +3,13 @@ package main
 import "strings"
 
 const (
-	none obstruction = iota
+	none object = iota
 	obstacle
 )
 
-type obstruction int
+type object int
 
-func (o obstruction) String() string {
+func (o object) String() string {
 	switch o {
 	case none:
 		return "."
@@ -20,7 +20,7 @@ func (o obstruction) String() string {
 	}
 }
 
-type grid [][]obstruction
+type grid [][]object
 
 func (g grid) String() string {
 	var b strings.Builder

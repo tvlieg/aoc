@@ -3,65 +3,51 @@ package main
 import "fmt"
 
 type state struct {
-	pos coord
-	dir direction
-}
-
-func newState(x, y int, r byte) *state {
-	var d direction
-	switch r {
-	case '^':
-		d = north
-	case '>':
-		d = east
-	case 'v':
-		d = south
-	case '<':
-		d = east
-	}
-	return &state{
-		pos: newCoord(x, y),
-		dir: d,
-	}
+	x, y int
+	dir  direction
 }
 
 func (s *state) String() string {
-	return fmt.Sprintf("x: %d y: %d dir: %v", s.pos.x, s.pos.y, s.dir)
+	return fmt.Sprintf("x: %d y: %d dir: %v", s.x, s.y, s.dir)
 }
 
 func (s *state) leavesMappedArea(g grid) bool {
-	if s.pos.x == 0 && s.dir == east {
+	if s.x == 0 && s.dir == east {
 		return true
 	}
-	if s.pos.x == len(g)-1 && s.dir == west {
+	if s.x == len(g)-1 && s.dir == west {
 		return true
 	}
-	if s.pos.y == 0 && s.dir == north {
+	if s.y == 0 && s.dir == north {
 		return true
 	}
-	if s.pos.y == len(g)-1 && s.dir == south {
+	if s.y == len(g)-1 && s.dir == south {
 		return true
 	}
+
 	return false
 }
 
 func (s *state) move(g grid) {
-	next := coord{s.pos.x, s.pos.y}
+	newX := s.x
+	newY := s.y
 	switch s.dir {
 	case north:
-		next.y = s.pos.y - 1
+		newY = s.y - 1
 	case south:
-		next.y = s.pos.y + 1
+		newY = s.y + 1
 	case east:
-		next.x = s.pos.x + 1
+		newX = s.x + 1
 	case west:
-		next.x = s.pos.x - 1
+		newX = s.x - 1
 	}
-	if g[next.y][next.x] == obstacle {
+
+	if g[newY][newX] == obstacle {
 		s.turn()
 		return
 	}
-	s.pos = next
+	s.x = newX
+	s.y = newY
 }
 
 func (s *state) turn() {
@@ -78,6 +64,20 @@ func (s *state) turn() {
 }
 
 type direction int
+
+func newDirection(r byte) direction {
+	switch r {
+	case '^':
+		return north
+	case 'v':
+		return south
+	case '>':
+		return east
+	case '<':
+		return west
+	}
+	return 0
+}
 
 const (
 	north direction = iota + 1
@@ -99,12 +99,4 @@ func (d direction) String() string {
 	default:
 		return "?"
 	}
-}
-
-type coord struct {
-	x, y int
-}
-
-func newCoord(x, y int) coord {
-	return coord{x, y}
 }

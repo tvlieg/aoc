@@ -7,22 +7,23 @@ import (
 )
 
 func main() {
-	// filePath := "example_input"
-	filePath := "input"
+	filePath := "example_input"
+	// filePath := "input"
 
 	file, _ := os.Open(filePath)
 	defer file.Close()
 
 	var (
-		g grid
-		s *state
+		g    grid
+		x, y int
+		dir  direction
 	)
 
 	scanner := bufio.NewScanner(file)
 	i := 0
 	for scanner.Scan() {
 		line := scanner.Bytes()
-		g = append(g, make([]obstruction, len(line)))
+		g = append(g, make([]object, len(line)))
 
 		for j, b := range line {
 			switch b {
@@ -33,7 +34,9 @@ func main() {
 				// fmt.Println("# at:", i, j)
 				g[i][j] = obstacle
 			case '>', '^', '<', 'v':
-				s = newState(j, i, b)
+				x = j
+				y = i
+				dir = newDirection(b)
 			}
 		}
 		i++
@@ -44,10 +47,14 @@ func main() {
 	}
 
 	// seen is the set of coordinates that have been visited.
-	seen := map[[2]int]struct{}{{s.pos.x, s.pos.y}: {}}
+	s := state{x, y, dir}
+	coordsSeen := map[[2]int]struct{}{{s.x, s.y}: {}}
 	for !s.leavesMappedArea(g) {
 		s.move(g)
-		seen[[2]int{s.pos.x, s.pos.y}] = struct{}{}
+		coordsSeen[[2]int{s.x, s.y}] = struct{}{}
 	}
-	fmt.Println(len(seen))
+	fmt.Println(len(coordsSeen))
+
+	// s = state{x, y, dir}
+	// statesSeen := map[[3]int]struct{}{{s.x, s.y, int(s.dir)}: {}}
 }
