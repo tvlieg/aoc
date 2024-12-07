@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"math"
 	"os"
 	"slices"
 	"strconv"
@@ -45,7 +46,7 @@ func main() {
 
 	var count int
 	for _, eq := range equations {
-		candidates := recurse1(eq.numbers)
+		candidates := recurse1(eq.testValue, eq.numbers)
 		if slices.Contains(candidates, eq.testValue) {
 			count += eq.testValue
 		}
@@ -54,7 +55,7 @@ func main() {
 
 	count = 0
 	for _, eq := range equations {
-		candidates := recurse2(eq.numbers)
+		candidates := recurse2(eq.testValue, eq.numbers)
 		if slices.Contains(candidates, eq.testValue) {
 			count += eq.testValue
 		}
@@ -62,50 +63,52 @@ func main() {
 	fmt.Println("Part 2:", count)
 }
 
-func recurse1(ns []int) []int {
+func recurse1(goal int, ns []int) []int {
 	if len(ns) == 1 {
 		return ns
 	}
 
 	tail := ns[len(ns)-1]
 	rest := ns[:len(ns)-1]
-	results := recurse1(rest)
 
 	var ret []int
-	for _, n := range results {
-		ret = append(ret, tail+n)
+	for _, r := range recurse1(goal, rest) {
+		if sum := tail + r; sum <= goal {
+			ret = append(ret, sum)
+		}
+		if product := tail * r; product <= goal {
+			ret = append(ret, product)
+		}
 	}
-	for _, n := range results {
-		ret = append(ret, tail*n)
-	}
+
 	return ret
 }
 
-func recurse2(ns []int) []int {
+func recurse2(goal int, ns []int) []int {
 	if len(ns) == 1 {
 		return ns
 	}
 
 	tail := ns[len(ns)-1]
 	rest := ns[:len(ns)-1]
-	results := recurse2(rest)
 
 	var ret []int
-	for _, n := range results {
-		ret = append(ret, tail+n)
-	}
-	for _, n := range results {
-		ret = append(ret, tail*n)
-	}
-	for _, n := range results {
-		ret = append(ret, concat(n, tail))
+	for _, r := range recurse2(goal, rest) {
+		if sum := tail + r; sum <= goal {
+			ret = append(ret, sum)
+		}
+		if product := tail * r; product <= goal {
+			ret = append(ret, product)
+		}
+		if conc := concat(r, tail); conc <= goal {
+			ret = append(ret, conc)
+		}
 	}
 
 	return ret
 }
 
 func concat(a, b int) int {
-	s := fmt.Sprintf("%d%d", a, b)
-	n, _ := strconv.Atoi(s)
-	return n
+	digits := int(math.Floor(math.Log10(float64(b)) + 1))
+	return a*int(math.Pow10(digits)) + b
 }

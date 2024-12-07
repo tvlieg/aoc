@@ -14,6 +14,6 @@
     flake-utils.lib.eachDefaultSystem (system: let
       pkgs = import nixos {inherit system;};
     in {
-      devShell = pkgs.mkShell {buildInputs = with pkgs; [go golangci-lint];};
+      devShell = pkgs.mkShell {buildInputs = with pkgs; [go golangci-lint gotests];};
     });
 }
