@@ -45,29 +45,67 @@ func main() {
 
 	var count int
 	for _, eq := range equations {
-		candidates := f(eq.numbers)
+		candidates := recurse1(eq.numbers)
 		if slices.Contains(candidates, eq.testValue) {
 			count += eq.testValue
 		}
 	}
 	fmt.Println("Part 1:", count)
+
+	count = 0
+	for _, eq := range equations {
+		candidates := recurse2(eq.numbers)
+		if slices.Contains(candidates, eq.testValue) {
+			count += eq.testValue
+		}
+	}
+	fmt.Println("Part 2:", count)
 }
 
-func f(numbers []int) []int {
-	if len(numbers) == 1 {
-		return numbers
+func recurse1(ns []int) []int {
+	if len(ns) == 1 {
+		return ns
 	}
 
-	tail := numbers[len(numbers)-1]
-	rest := numbers[:len(numbers)-1]
+	tail := ns[len(ns)-1]
+	rest := ns[:len(ns)-1]
+	results := recurse1(rest)
 
-	ret := make([]int, 0, len(numbers)*2)
-	recurse := f(rest)
-	for _, n := range recurse {
+	var ret []int
+	for _, n := range results {
 		ret = append(ret, tail+n)
 	}
-	for _, n := range recurse {
+	for _, n := range results {
 		ret = append(ret, tail*n)
 	}
 	return ret
+}
+
+func recurse2(ns []int) []int {
+	if len(ns) == 1 {
+		return ns
+	}
+
+	tail := ns[len(ns)-1]
+	rest := ns[:len(ns)-1]
+	results := recurse2(rest)
+
+	var ret []int
+	for _, n := range results {
+		ret = append(ret, tail+n)
+	}
+	for _, n := range results {
+		ret = append(ret, tail*n)
+	}
+	for _, n := range results {
+		ret = append(ret, concat(n, tail))
+	}
+
+	return ret
+}
+
+func concat(a, b int) int {
+	s := fmt.Sprintf("%d%d", a, b)
+	n, _ := strconv.Atoi(s)
+	return n
 }
