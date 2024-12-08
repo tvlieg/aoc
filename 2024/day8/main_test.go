@@ -38,7 +38,7 @@ func Test_getAntinodes(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := getAntinodes(tt.args.a1, tt.args.a2); !reflect.DeepEqual(got, tt.want) {
+			if got := getAntinodes1(tt.args.a1, tt.args.a2); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("getAntinodes() = %v, want %v", got, tt.want)
 			}
 		})
