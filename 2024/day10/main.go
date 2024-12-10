@@ -6,10 +6,6 @@ import (
 	"os"
 )
 
-type coord struct {
-	x, y int
-}
-
 func main() {
 	// filePath := "example_input_1"
 	// filePath := "example_input_2"
@@ -18,9 +14,9 @@ func main() {
 	file, _ := os.Open(filePath)
 	defer file.Close()
 
+	// Parse input
+	var g grid
 	scanner := bufio.NewScanner(file)
-
-	var grid [][]int
 	for scanner.Scan() {
 		line := scanner.Text()
 		row := make([]int, len(line))
@@ -28,51 +24,95 @@ func main() {
 		for i, r := range line {
 			row[i] = int(r - '0')
 		}
-		grid = append(grid, row)
+		g = append(g, row)
 	}
 
-	var trails []map[coord]struct{}
-	for y, row := range grid {
+	var score1, score2 int
+	for y, row := range g {
 		for x, v := range row {
-			if v == 0 {
-				trails = append(trails, map[coord]struct{}{{x, y}: {}})
+			if v != 0 {
+				continue
 			}
+			score1 += part1(coord{x, y}, g)
+			score2 += part2(coord{x, y}, g)
 		}
 	}
-
-	for i := 0; i < 9; i++ {
-		for i, trail := range trails {
-			trails[i] = move(trail, grid)
-		}
-	}
-
-	var score int
-	for _, trail := range trails {
-		score += len(trail)
-	}
-	fmt.Println("Part1:", score)
+	fmt.Println("Part1:", score1)
+	fmt.Println("Part2:", score2)
 }
 
-func move(trail map[coord]struct{}, grid [][]int) map[coord]struct{} {
-	height := len(grid)
-	width := len(grid[0])
+func part1(c coord, g grid) int {
+	return len(uniq(g.recurse(0, []coord{c})))
+}
 
-	newTrail := make(map[coord]struct{})
-	for pos := range trail {
-		next := grid[pos.y][pos.x] + 1
-		if pos.y < height-1 && grid[pos.y+1][pos.x] == next {
-			newTrail[coord{pos.x, pos.y + 1}] = struct{}{}
+func part2(c coord, g grid) int {
+	return len(g.recurse(0, []coord{c}))
+}
+
+func uniq(cs []coord) []coord {
+	m := make(map[coord]struct{})
+	var res []coord
+	for _, c := range cs {
+		if _, ok := m[c]; ok {
+			continue
 		}
-		if pos.x < width-1 && grid[pos.y][pos.x+1] == next {
-			newTrail[coord{pos.x + 1, pos.y}] = struct{}{}
-		}
-		if pos.y > 0 && grid[pos.y-1][pos.x] == next {
-			newTrail[coord{pos.x, pos.y - 1}] = struct{}{}
-		}
-		if pos.x > 0 && grid[pos.y][pos.x-1] == next {
-			newTrail[coord{pos.x - 1, pos.y}] = struct{}{}
+		m[c] = struct{}{}
+		res = append(res, c)
+	}
+	return res
+}
+
+type coord struct {
+	x, y int
+}
+
+type grid [][]int
+
+func (g grid) get(c coord) (int, bool) {
+	if c.x < 0 || c.x >= len(g[0]) || c.y < 0 || c.y >= len(g) {
+		return 0, false
+	}
+	return g[c.y][c.x], true
+}
+
+func (g grid) recurse(h int, coords []coord) []coord {
+	if h == 9 {
+		return coords
+	}
+	var next []coord
+	for _, c := range coords {
+		next = append(next, g.move(h+1, c)...)
+	}
+	return g.recurse(h+1, next)
+}
+
+func (g grid) move(height int, c coord) []coord {
+	nextCoords := make([]coord, 0, 4)
+	for _, next := range []coord{
+		up(c),
+		down(c),
+		left(c),
+		right(c),
+	} {
+		if h, ok := g.get(next); ok && h == height {
+			nextCoords = append(nextCoords, next)
 		}
 	}
+	return nextCoords
+}
 
-	return newTrail
+func up(c coord) coord {
+	return coord{c.x, c.y - 1}
+}
+
+func down(c coord) coord {
+	return coord{c.x, c.y + 1}
+}
+
+func left(c coord) coord {
+	return coord{c.x - 1, c.y}
+}
+
+func right(c coord) coord {
+	return coord{c.x + 1, c.y}
 }
