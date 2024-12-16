@@ -8,32 +8,23 @@ import (
 	"strings"
 )
 
-var (
-	//go:embed example_input
-	example string
+//go:embed example_input
+var example string
 
-	//go:embed input
-	input string
-)
-
-type pos struct {
-	x, y, vx, vy int
-}
+//go:embed input
+var input string
 
 func main() {
-	fmt.Println("part 1 (example):", part1(example, 11, 7))
-	fmt.Println("part 1:", part1(input, 101, 103))
-	// fmt.Println("part 2:", part2(input, 101, 103))
+	fmt.Println("part 1 (example):", part1(parse(example), 11, 7))
+	fmt.Println("part 1:", part1(parse(input), 101, 103))
+	fmt.Println("part 2:", part2(parse(input), 101, 103))
 }
 
-func part1(input string, width, height int) int {
+func parse(input string) []robot {
 	const pattern = `^p=(\d+),(\d+) v=(-?\d+),(-?\d+)$`
 	re := regexp.MustCompile(pattern)
 
-	const seconds = 100
-
-	var tl, tr, bl, br int
-
+	var robots []robot
 	lines := strings.Split(input, "\n")
 	for _, line := range lines {
 		m := re.FindStringSubmatch(line)
@@ -45,25 +36,33 @@ func part1(input string, width, height int) int {
 		vx, _ := strconv.Atoi(m[3])
 		vy, _ := strconv.Atoi(m[4])
 
-		x = mod(x+seconds*vx, width)
-		y = mod(y+seconds*vy, height)
+		robots = append(robots, robot{x, y, vx, vy})
+	}
+	return robots
+}
 
-		// position on middle axes
-		if x == width/2 || y == height/2 {
+func part1(robots []robot, w, h int) int {
+	xAxis := w / 2
+	yAxis := h / 2
+
+	var tl, tr, bl, br int
+	for _, r := range robots {
+		r = r.moveN(100, w, h)
+
+		if r.x == xAxis || r.y == yAxis {
 			continue
 		}
 
-		// fmt.Printf("after 100 seconds: %d,%d\n", px, py)
-		isTop := y/(height/2) == 0
-		isLeft := x/(width/2) == 0
+		top := r.y < yAxis
+		left := r.x < xAxis
 		switch {
-		case isTop && isLeft:
+		case top && left:
 			tl++
-		case isTop && !isLeft:
+		case top && !left:
 			tr++
-		case !isTop && isLeft:
+		case !top && left:
 			bl++
-		case !isTop && !isLeft:
+		case !top && !left:
 			br++
 		}
 	}
@@ -71,10 +70,60 @@ func part1(input string, width, height int) int {
 	return tl * tr * bl * br
 }
 
-func part2(input string, width, height int) int {
-	return 0
+func part2(robots []robot, w, h int) int {
+	for i := 1; ; i++ {
+		for j, r := range robots {
+			robots[j] = r.move(w, h)
+		}
+		if checkTree(robots, w) {
+			return i
+		}
+	}
 }
 
 func mod(a, m int) int {
 	return (a%m + m) % m
+}
+
+type robot struct {
+	x, y, vx, vy int
+}
+
+func (r robot) moveN(count, w, h int) robot {
+	r.x = mod(r.x+r.vx*count, w)
+	r.y = mod(r.y+r.vy*count, h)
+	return r
+}
+
+func (r robot) move(w, h int) robot {
+	return r.moveN(1, w, h)
+}
+
+func checkTree(robots []robot, w int) bool {
+	xAxis := w / 2
+
+	m := make(map[[2]int]struct{}, len(robots))
+	for _, r := range robots {
+		m[[2]int{r.x, r.y}] = struct{}{}
+	}
+
+	// check for symmetry
+	var score int
+	for coord := range m {
+		if coord[0] <= xAxis {
+			mirror := [2]int{w - coord[0], coord[1]}
+			if _, ok := m[mirror]; !ok {
+				continue
+			}
+			score++
+
+		}
+	}
+	// Try increasing scores
+	if score > 50 {
+		fmt.Println("score:", score)
+		return true
+	}
+
+	return false
 }
