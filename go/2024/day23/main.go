@@ -19,8 +19,8 @@ func main() {
 	fmt.Println("Part1 (example):", part1(example))
 	fmt.Println("Part1:", part1(input))
 
-	part2(example)
-	part2(input) // run; then pipe to `sort -n`
+	fmt.Println("Part2: (example)", part2(example))
+	fmt.Println("Part2:", part2(input))
 }
 
 func part1(input string) int {
@@ -53,22 +53,27 @@ func part2(input string) string {
 	for node := range g {
 		remaining[node] = struct{}{}
 	}
-	bronKerbosch(g, make(map[string]struct{}), remaining, make(map[string]struct{}))
-	return ""
+	pwds := bronKerbosch(g, make(map[string]struct{}), remaining, make(map[string]struct{}))
+	var longest string
+	for _, pwd := range pwds {
+		if len(pwd) <= len(longest) {
+			continue
+		}
+		longest = pwd
+	}
+	return longest
 }
 
-func bronKerbosch(graph map[string][]string, potential, remaining, skip map[string]struct{}) int {
+func bronKerbosch(graph map[string][]string, potential, remaining, skip map[string]struct{}) (pwds []string) {
 	if len(remaining) == 0 && len(skip) == 0 {
 		pwd := make([]string, 0, len(potential))
 		for host := range potential {
 			pwd = append(pwd, host)
 		}
 		slices.Sort(pwd)
-		fmt.Println(len(potential), strings.Join(pwd, ","))
-		return 1
+		return []string{strings.Join(pwd, ",")}
 	}
 
-	var found int
 	for node := range remaining {
 		newPotential := make(map[string]struct{})
 		maps.Copy(newPotential, potential)
@@ -88,12 +93,12 @@ func bronKerbosch(graph map[string][]string, potential, remaining, skip map[stri
 			}
 		}
 
-		found += bronKerbosch(graph, newPotential, newRemaining, newSkip)
+		pwds = append(pwds, bronKerbosch(graph, newPotential, newRemaining, newSkip)...)
 		delete(remaining, node)
 		delete(skip, node)
 	}
 
-	return found
+	return
 }
 
 func parse(input string) map[string][]string {
