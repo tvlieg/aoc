@@ -15,24 +15,29 @@ func main() {
 	}
 	defer file.Close()
 
-	d := dial{50}
-	var count int
+	d := dial{50, 100}
+	var (
+		count1 int
+		count2 int
+	)
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
-		d.rotate(scanner.Text())
+		count2 += d.rotate(scanner.Text())
 		if d.pos == 0 {
-			count++
+			count1++
 		}
 	}
 	if err := scanner.Err(); err != nil {
 		panic(err)
 	}
 
-	fmt.Println(count)
+	fmt.Println("1:", count1)
+	fmt.Println("2:", count2)
 }
 
 type dial struct {
 	pos int
+	max int
 }
 
 func (d *dial) rotate(s string) int {
@@ -52,17 +57,25 @@ func (d *dial) rotate(s string) int {
 	case 'R':
 		return d.rotateRight(n)
 	}
+
 	return 0
 }
 
 func (d *dial) rotateLeft(n int) int {
-	d.pos = mod(d.pos-n, 100)
-	return d.pos
+	zeros := (n + (d.max - d.pos)) / d.max
+	if d.pos == 0 {
+		zeros--
+	}
+	d.pos = mod(d.pos-n, d.max)
+
+	return zeros
 }
 
 func (d *dial) rotateRight(n int) int {
-	d.pos = mod(d.pos+n, 100)
-	return d.pos
+	zeros := (n + d.pos) / d.max
+	d.pos = mod(d.pos+n, d.max)
+
+	return zeros
 }
 
 func mod(a, b int) int {
